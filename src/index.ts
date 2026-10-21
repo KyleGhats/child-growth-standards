@@ -9,7 +9,7 @@ export {
   NINETEEN_YEARS_DAYS,
   WHO_DAYS_PER_MONTH,
 } from "./age.js";
-export { mapWhoClassification } from "./classify-who.js";
+export { mapWhoNutritionalStatus } from "./who/nutritional-status.js";
 export { computeZScore, lookupLms, normalCdf, zScoreToPercentile } from "./lms.js";
 export type {
   AssessmentResult,
@@ -19,6 +19,8 @@ export type {
   IndicatorResult,
   Sex,
   WhoAgeIndex,
+  WhoNutritionalStatusReference,
+  WhoNutritionalStatusResult,
   LmsRow,
   DohBandRow,
 } from "./types.js";

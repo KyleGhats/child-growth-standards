@@ -1,5 +1,4 @@
 import { ageInCompletedMonths, ageInDays, resolveDates } from "../age.js";
-import { mapWhoClassification } from "../classify-who.js";
 import { computeZScore, lookupLms, zScoreToPercentile } from "../lms.js";
 import type {
   AssessmentResult,
@@ -7,6 +6,7 @@ import type {
   CalculateZScoreInput,
   IndicatorResult,
 } from "../types.js";
+import { mapWhoNutritionalStatus } from "./nutritional-status.js";
 import { resolveWhoLms, type WhoIndicator } from "./resolve-table.js";
 
 const TWENTY_FOUR_MONTHS_DAYS = 731;
@@ -78,12 +78,14 @@ export function calculateWhoZScore(input: CalculateZScoreInput): IndicatorResult
   if (!Number.isFinite(z)) return null;
 
   const kind = indicatorKind(input.indicator, days);
-  const status = mapWhoClassification(kind, z, days);
+  const ns = mapWhoNutritionalStatus(kind, z, days);
 
   return {
     indicator: input.indicator,
     zScore: z,
-    status,
+    nutritionalStatus: ns.nutritionalStatus,
+    nutritionalStatusCode: ns.nutritionalStatusCode,
+    sdBand: ns.sdBand,
     percentile: zScoreToPercentile(z),
   };
 }

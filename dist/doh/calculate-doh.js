@@ -3,14 +3,11 @@ import { classifyDohLhfa, classifyDohWfa, classifyDohWflh, } from "./classify-cu
 import { loadDohTable, lookupDohRow, mRoundHalf } from "./load-tables.js";
 const TWENTY_FOUR_MONTHS = 24;
 const SIXTY_MONTHS = 60;
-function empty() {
-    return { indicator: "", zScore: null, status: "", statusCode: "" };
-}
 export function calculateDohAll(input) {
     const dates = resolveDates(input.dateOfBirth, input.dateOfMeasurement);
     if (!dates) {
         return {
-            standard: "doh",
+            standard: "nnc",
             ageDays: 0,
             ageMonthsCompleted: 0,
             results: [],
@@ -28,8 +25,9 @@ export function calculateDohAll(input) {
         results.push({
             indicator: "weight-for-age",
             zScore: null,
-            status: c.label,
-            statusCode: c.code,
+            nutritionalStatus: c.label,
+            nutritionalStatusCode: c.code,
+            sdBand: c.sdBand,
         });
     }
     const lhfaRow = lookupDohRow(loadDohTable("lhfa", sex), months);
@@ -38,8 +36,9 @@ export function calculateDohAll(input) {
         results.push({
             indicator: "length-height-for-age",
             zScore: null,
-            status: c.label,
-            statusCode: c.code,
+            nutritionalStatus: c.label,
+            nutritionalStatusCode: c.code,
+            sdBand: c.sdBand,
         });
     }
     const lengthIndex = mRoundHalf(height);
@@ -52,13 +51,14 @@ export function calculateDohAll(input) {
             results.push({
                 indicator: wflIndicator === "wfl" ? "weight-for-length" : "weight-for-height",
                 zScore: null,
-                status: c.label,
-                statusCode: c.code,
+                nutritionalStatus: c.label,
+                nutritionalStatusCode: c.code,
+                sdBand: c.sdBand,
             });
         }
     }
     return {
-        standard: "doh",
+        standard: "nnc",
         ageDays: days,
         ageMonthsCompleted: months,
         results,

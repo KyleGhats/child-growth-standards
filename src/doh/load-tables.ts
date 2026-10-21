@@ -12,7 +12,7 @@ export type DohTable = {
 
 const cache = new Map<string, DohTable>();
 
-const dataDir = path.join(resolveDataRoot(import.meta.url), "doh");
+const dataDir = path.join(resolveDataRoot(import.meta.url), "nnc");
 
 export function loadDohTable(indicator: string, sex: Sex): DohTable {
   const key = `${indicator}-${sex}`;

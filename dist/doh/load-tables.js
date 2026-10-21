@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { resolveDataRoot } from "../data-path.js";
 const cache = new Map();
-const dataDir = path.join(resolveDataRoot(import.meta.url), "doh");
+const dataDir = path.join(resolveDataRoot(import.meta.url), "nnc");
 export function loadDohTable(indicator, sex) {
     const key = `${indicator}-${sex}`;
     const hit = cache.get(key);

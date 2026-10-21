@@ -4,8 +4,8 @@ JavaScript library for pediatric anthropometry using two Philippine/nutrition wo
 
 | Mode | `standard` | What it computes |
 |------|------------|------------------|
-| **DOH / NNC (eOPT-style)** | `"doh"` | Nutritional **classification** from age-in-**months** cutoff tables (weight-for-age, length/height-for-age, weight-for-length/height). No z-scores. |
-| **WHO LMS** | `"who"` | **Z-scores**, percentiles, and WHO-style **classifications** from bundled reference tables. |
+| **NNC (eOPT-style)** | `"nnc"` | **Nutritional status** from age-in-**months** cutoff tables (weight-for-age, length/height-for-age, weight-for-length/height). No z-scores. |
+| **WHO LMS** | `"who"` | **Z-scores**, percentiles, and **nutritional status** from bundled WHO reference tables and published z-score cutoffs. |
 
 Zero runtime dependencies. Works in Node.js and bundlers that support ES modules.
 
@@ -21,7 +21,7 @@ npm install child-growth-standards
 import { calculateAll } from "child-growth-standards";
 
 const assessment = await calculateAll({
-  standard: "doh", // or "who"
+  standard: "nnc", // or "who"
   sex: "male", // or "female"
   dateOfBirth: "2023-06-15",
   dateOfMeasurement: "2024-06-15",
@@ -36,20 +36,37 @@ console.log(assessment.results);
 
 Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (calendar dates, not timestamps with timezone surprises).
 
-## Choosing DOH vs WHO
+## Migration (0.1.0 → 0.2.0)
 
-### DOH (`standard: "doh"`)
+- `standard: "doh"` → **`"nnc"`**
+- `result.status` → **`nutritionalStatus`**
+- `result.statusCode` → **`nutritionalStatusCode`**
+- New optional **`sdBand`** on each indicator (SD-range hint for display)
+- Export **`mapWhoNutritionalStatus`** replaces **`mapWhoClassification`**
+
+## Choosing NNC vs WHO
+
+### NNC (`standard: "nnc"`)
 
 - Age for WFA and length/height-for-age: **completed calendar months** (same idea as Excel `DATEDIF(..., "m")`).
 - Weight-for-**length** applies below **24 months**; weight-for-**height** from **24 up to 59 months** (by month index at measurement).
-- Each indicator returns **`status`** / **`statusCode`** (e.g. SUW, UW, N, OW, SSt, St, SW, MW, Ob). **`zScore` is always `null`**.
+- Each indicator returns **`nutritionalStatus`**, **`nutritionalStatusCode`** (e.g. SUW, UW, N, OW, SSt, St, SW, MW, Ob), and **`sdBand`**. **`zScore` is always `null`**.
 
 ### WHO (`standard: "who"`)
 
 - Under **5 years**: age-indexed indicators default to **`ageInDays`** on the LMS tables.
 - Optional **`whoAgeIndex: "months"`** uses month-indexed tables for 0–5 (for comparison with month-based tools).
 - **5–19 years**: height-for-age and BMI-for-age use month-indexed WHO 2007 reference; weight-for-age applies in the 5–10 year band where tables exist.
-- Returns **`zScore`**, **`percentile`**, and **`status`** per indicator.
+- Returns **`zScore`**, **`percentile`**, **`nutritionalStatus`**, **`nutritionalStatusCode`**, and **`sdBand`** per indicator.
+
+### WHO nutritional status references
+
+| Age | Source |
+|-----|--------|
+| Birth–5 years | [WHO IMCI Table 1 (NBK487900)](https://www.ncbi.nlm.nih.gov/books/NBK487900/table/fm.s1.t1/) — underweight, stunting, wasting, overweight/obesity on WFL/H and BMI-for-age; weight-for-age underweight only |
+| 5–19 years | [WHO BMI-for-age (5–19)](https://www.who.int/tools/growth-reference-data-for-5to19-years/indicators/bmi-for-age) — thinness, normal weight, overweight, obesity; height-for-age stunting |
+
+Head circumference-for-age uses WHO chart bands (below / normal / above expected), not Table 1.
 
 ```ts
 await calculateAll({
@@ -91,25 +108,26 @@ const wfa = await calculateZScore({
   weightKg: 9.5,
   lengthHeightCm: 75,
 });
-// { indicator, zScore, status, percentile }
+// { indicator, zScore, nutritionalStatus, nutritionalStatusCode, sdBand, percentile }
 ```
 
 Indicators: `weight-for-age`, `length-height-for-age`, `bmi-for-age`, `head-circumference-for-age`, `weight-for-length`, `weight-for-height`.
 
-`calculateZScore` with `standard: "doh"` returns `null` (DOH is cutoff classification only, via `calculateAll`).
+`calculateZScore` with `standard: "nnc"` returns `null` (NNC is cutoff classification only, via `calculateAll`).
 
 ## Result shape
 
 ```ts
 type AssessmentResult = {
-  standard: "doh" | "who";
+  standard: "nnc" | "who";
   ageDays: number;
   ageMonthsCompleted: number;
   results: Array<{
     indicator: string;
     zScore: number | null;
-    status: string;
-    statusCode?: string; // DOH short codes when applicable
+    nutritionalStatus: string;
+    nutritionalStatusCode?: string;
+    sdBand?: string;
     percentile?: number | null; // WHO only
   }>;
 };
@@ -117,15 +135,16 @@ type AssessmentResult = {
 
 ## Other exports
 
-Age helpers, LMS utilities, and TypeScript types are exported for advanced use:
+Age helpers, LMS utilities, WHO nutritional status mapping, and TypeScript types:
 
 ```ts
 import {
   ageInDays,
   ageInCompletedMonths,
-  mapWhoClassification,
+  mapWhoNutritionalStatus,
   type CalculateAllInput,
   type GrowthStandard,
+  type WhoNutritionalStatusResult,
 } from "child-growth-standards";
 ```
 

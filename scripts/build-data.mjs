@@ -98,7 +98,7 @@ const dohFileMap = [
 ];
 
 function buildDoh() {
-  const outDir = path.join(outRoot, "doh");
+  const outDir = path.join(outRoot, "nnc");
   ensureDir(outDir);
   for (const spec of dohFileMap) {
     const fp = path.join(rawDoh, spec.file);

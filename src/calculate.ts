@@ -8,7 +8,7 @@ import type {
 import { calculateWhoAll, calculateWhoZScore } from "./who/calculate-who.js";
 
 export async function calculateAll(input: CalculateAllInput): Promise<AssessmentResult> {
-  if (input.standard === "doh") {
+  if (input.standard === "nnc") {
     return calculateDohAll(input);
   }
   return calculateWhoAll(input);
@@ -17,7 +17,7 @@ export async function calculateAll(input: CalculateAllInput): Promise<Assessment
 export async function calculateZScore(
   input: CalculateZScoreInput,
 ): Promise<IndicatorResult | null> {
-  if (input.standard === "doh") {
+  if (input.standard === "nnc") {
     return null;
   }
   return calculateWhoZScore(input);

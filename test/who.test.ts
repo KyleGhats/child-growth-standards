@@ -14,7 +14,7 @@ describe("WHO standard", () => {
     });
     expect(row?.zScore).not.toBeNull();
     expect(Number.isFinite(row!.zScore!)).toBe(true);
-    expect(row?.status).toBeTruthy();
+    expect(row?.nutritionalStatus).toBeTruthy();
   });
 
   it("calculateAll includes WFA and LHFA under 5", async () => {
@@ -43,7 +43,7 @@ describe("WHO golden values (from bundled LMS tables)", () => {
       lengthHeightCm: 75,
     });
     expect(row?.zScore).toBeCloseTo(-0.13953339918284288, 5);
-    expect(row?.status).toBe("Normal");
+    expect(row?.nutritionalStatus).toBe("Normal");
     expect(row?.percentile).toBeCloseTo(44.45141779198591, 2);
   });
 });

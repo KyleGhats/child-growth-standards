@@ -1,4 +1,4 @@
-export type GrowthStandard = "doh" | "who";
+export type GrowthStandard = "nnc" | "who";
 
 export type Sex = "male" | "female";
 
@@ -27,11 +27,21 @@ export type CalculateZScoreInput = CalculateAllInput & {
   measurement?: number;
 };
 
+export type WhoNutritionalStatusReference = "who-imci-table1-0-5" | "who-growth-ref-5-19";
+
+export type WhoNutritionalStatusResult = {
+  nutritionalStatus: string;
+  nutritionalStatusCode: string;
+  sdBand: string;
+  reference: WhoNutritionalStatusReference;
+};
+
 export type IndicatorResult = {
   indicator: string;
   zScore: number | null;
-  status: string;
-  statusCode?: string;
+  nutritionalStatus: string;
+  nutritionalStatusCode?: string;
+  sdBand?: string;
   percentile?: number | null;
 };
 

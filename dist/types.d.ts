@@ -1,4 +1,4 @@
-export type GrowthStandard = "doh" | "who";
+export type GrowthStandard = "nnc" | "who";
 export type Sex = "male" | "female";
 export type WhoAgeIndex = "days" | "months";
 export type CalculateAllInput = {
@@ -16,11 +16,19 @@ export type CalculateZScoreInput = CalculateAllInput & {
     indicator: "weight-for-age" | "length-height-for-age" | "bmi-for-age" | "head-circumference-for-age" | "weight-for-length" | "weight-for-height";
     measurement?: number;
 };
+export type WhoNutritionalStatusReference = "who-imci-table1-0-5" | "who-growth-ref-5-19";
+export type WhoNutritionalStatusResult = {
+    nutritionalStatus: string;
+    nutritionalStatusCode: string;
+    sdBand: string;
+    reference: WhoNutritionalStatusReference;
+};
 export type IndicatorResult = {
     indicator: string;
     zScore: number | null;
-    status: string;
-    statusCode?: string;
+    nutritionalStatus: string;
+    nutritionalStatusCode?: string;
+    sdBand?: string;
     percentile?: number | null;
 };
 export type AssessmentResult = {

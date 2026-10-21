@@ -1,5 +1,31 @@
 import type { DohBandRow } from "../types.js";
 
+export type NncClassification = {
+  code: string;
+  label: string;
+  sdBand: string;
+};
+
+function nncSdBandFromCode(code: string): string {
+  const map: Record<string, string> = {
+    SUW: "< −3 SD",
+    UW: "< −2 SD",
+    N: "−2 SD to +2 SD",
+    OW: "> +2 SD",
+    SSt: "< −3 SD",
+    St: "< −2 SD",
+    T: "> +2 SD",
+    SW: "< −3 SD",
+    MW: "< −2 SD",
+    Ob: "> +2 SD",
+  };
+  return map[code] ?? "";
+}
+
+function withSdBand(code: string, label: string): NncClassification {
+  return { code, label, sdBand: nncSdBandFromCode(code) };
+}
+
 function band(bands: Record<string, number>, ...keys: string[]): number | undefined {
   for (const k of Object.keys(bands)) {
     for (const needle of keys) {
@@ -9,7 +35,7 @@ function band(bands: Record<string, number>, ...keys: string[]): number | undefi
   return undefined;
 }
 
-export function classifyDohWfa(weightKg: number, row: DohBandRow): { code: string; label: string } {
+export function classifyDohWfa(weightKg: number, row: DohBandRow): NncClassification {
   const b = row.bands;
   const uwFrom = band(b, "underweight from");
   const uwTo = band(b, "underweight to");
@@ -18,24 +44,21 @@ export function classifyDohWfa(weightKg: number, row: DohBandRow): { code: strin
   const ow = band(b, "overweight");
 
   if (uwFrom != null && weightKg < uwFrom) {
-    return { code: "SUW", label: "Severely Underweight" };
+    return withSdBand("SUW", "Severely Underweight");
   }
   if (uwFrom != null && uwTo != null && weightKg >= uwFrom && weightKg < uwTo) {
-    return { code: "UW", label: "Underweight" };
+    return withSdBand("UW", "Underweight");
   }
   if (normalFrom != null && normalTo != null && weightKg >= normalFrom && weightKg <= normalTo) {
-    return { code: "N", label: "Normal" };
+    return withSdBand("N", "Normal");
   }
   if (ow != null && weightKg > normalTo!) {
-    return { code: "OW", label: "Overweight" };
+    return withSdBand("OW", "Overweight");
   }
-  return { code: "", label: "" };
+  return withSdBand("", "");
 }
 
-export function classifyDohLhfa(
-  heightCm: number,
-  row: DohBandRow,
-): { code: string; label: string } {
+export function classifyDohLhfa(heightCm: number, row: DohBandRow): NncClassification {
   const b = row.bands;
   const stFrom = band(b, "stunted from");
   const stTo = band(b, "stunted to");
@@ -44,24 +67,21 @@ export function classifyDohLhfa(
   const tall = band(b, "tall");
 
   if (stFrom != null && heightCm < stFrom) {
-    return { code: "SSt", label: "Severely Stunted" };
+    return withSdBand("SSt", "Severely Stunted");
   }
   if (stFrom != null && stTo != null && heightCm >= stFrom && heightCm < stTo) {
-    return { code: "St", label: "Stunted" };
+    return withSdBand("St", "Stunted");
   }
   if (normalFrom != null && normalTo != null && heightCm >= normalFrom && heightCm <= normalTo) {
-    return { code: "N", label: "Normal" };
+    return withSdBand("N", "Normal");
   }
   if (tall != null && heightCm > normalTo!) {
-    return { code: "T", label: "Tall" };
+    return withSdBand("T", "Tall");
   }
-  return { code: "", label: "" };
+  return withSdBand("", "");
 }
 
-export function classifyDohWflh(
-  weightKg: number,
-  row: DohBandRow,
-): { code: string; label: string } {
+export function classifyDohWflh(weightKg: number, row: DohBandRow): NncClassification {
   const b = row.bands;
   const sw = band(b, "severely wasted");
   const mwFrom = band(b, "wasted from");
@@ -72,16 +92,16 @@ export function classifyDohWflh(
   const owTo = band(b, "overweight to");
   const ob = band(b, "obese");
 
-  if (sw != null && weightKg < sw) return { code: "SW", label: "Severely Wasted" };
+  if (sw != null && weightKg < sw) return withSdBand("SW", "Severely Wasted");
   if (mwFrom != null && mwTo != null && weightKg >= mwFrom && weightKg < mwTo) {
-    return { code: "MW", label: "Moderately Wasted" };
+    return withSdBand("MW", "Moderately Wasted");
   }
   if (normalFrom != null && normalTo != null && weightKg >= normalFrom && weightKg <= normalTo) {
-    return { code: "N", label: "Normal" };
+    return withSdBand("N", "Normal");
   }
   if (owFrom != null && owTo != null && weightKg > normalTo! && weightKg <= owTo) {
-    return { code: "OW", label: "Overweight" };
+    return withSdBand("OW", "Overweight");
   }
-  if (ob != null && weightKg > owTo!) return { code: "Ob", label: "Obese" };
-  return { code: "", label: "" };
+  if (ob != null && weightKg > owTo!) return withSdBand("Ob", "Obese");
+  return withSdBand("", "");
 }
