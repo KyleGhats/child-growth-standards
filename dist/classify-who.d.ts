@@ -1,0 +1,2 @@
+export declare function mapWhoClassification(indicatorKind: "wfa" | "hfa" | "lhfa" | "wfl" | "wfh" | "bfa" | "hcfa", zScore: number, ageInDays: number): string;
+//# sourceMappingURL=classify-who.d.ts.map

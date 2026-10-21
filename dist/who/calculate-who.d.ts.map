@@ -1,0 +1,1 @@
+{"version":3,"file":"calculate-who.d.ts","sourceRoot":"","sources":["../../src/who/calculate-who.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EACV,gBAAgB,EAChB,iBAAiB,EACjB,oBAAoB,EACpB,eAAe,EAChB,MAAM,aAAa,CAAC;AA0CrB,wBAAgB,kBAAkB,CAAC,KAAK,EAAE,oBAAoB,GAAG,eAAe,GAAG,IAAI,CAsCtF;AAED,wBAAgB,eAAe,CAAC,KAAK,EAAE,iBAAiB,GAAG,gBAAgB,CA6B1E"}

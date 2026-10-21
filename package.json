@@ -1,0 +1,49 @@
+{
+  "name": "child-growth-standards",
+  "version": "0.1.0",
+  "description": "Pediatric growth — DOH (NNC/eOPT) cutoff classification and WHO LMS z-scores",
+  "type": "module",
+  "license": "MIT",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KyleGhats/child-growth-standards.git"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "DATA_PROVENANCE.md"
+  ],
+  "scripts": {
+    "sync:sources": "node scripts/sync-sources-from-bmrs.mjs",
+    "build:data": "node scripts/build-data.mjs",
+    "build": "npm run build:data && tsc -p tsconfig.build.json",
+    "test": "npm run build && vitest run",
+    "prepublishOnly": "npm run build && vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "who",
+    "doh",
+    "growth",
+    "anthropometry",
+    "z-score",
+    "nutrition"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "xlsx": "^0.18.5"
+  }
+}
