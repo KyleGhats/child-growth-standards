@@ -1,11 +1,13 @@
 # child-growth-standards
 
-Pediatric growth calculations with a single API and two reference modes:
+JavaScript library for pediatric anthropometry using two Philippine/nutrition workflows in one API:
 
-- **`standard: 'doh'`** — DOH / NNC eOPT-style **cutoff tables** (age in **completed months**).
-- **`standard: 'who'`** — WHO **LMS z-scores** (age in **days** by default for 0–5; optional `whoAgeIndex: 'months'`).
+| Mode | `standard` | What it computes |
+|------|------------|------------------|
+| **DOH / NNC (eOPT-style)** | `"doh"` | Nutritional **classification** from age-in-**months** cutoff tables (weight-for-age, length/height-for-age, weight-for-length/height). No z-scores. |
+| **WHO LMS** | `"who"` | **Z-scores**, percentiles, and WHO-style **classifications** from bundled reference tables. |
 
-Zero runtime dependencies. Reference data ships as JSON under `dist/data/`.
+Zero runtime dependencies. Works in Node.js and bundlers that support ES modules.
 
 ## Install
 
@@ -13,88 +15,124 @@ Zero runtime dependencies. Reference data ships as JSON under `dist/data/`.
 npm install child-growth-standards
 ```
 
-Local development:
-
-```bash
-cd child-growth-standards
-npm install
-npm run build
-```
-
-## Usage
+## Quick start
 
 ```ts
 import { calculateAll } from "child-growth-standards";
 
-const doh = await calculateAll({
-  standard: "doh",
-  sex: "male",
+const assessment = await calculateAll({
+  standard: "doh", // or "who"
+  sex: "male", // or "female"
   dateOfBirth: "2023-06-15",
   dateOfMeasurement: "2024-06-15",
   weightKg: 8.2,
   lengthHeightCm: 72,
 });
 
-const who = await calculateAll({
+console.log(assessment.ageDays);
+console.log(assessment.ageMonthsCompleted);
+console.log(assessment.results);
+```
+
+Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (calendar dates, not timestamps with timezone surprises).
+
+## Choosing DOH vs WHO
+
+### DOH (`standard: "doh"`)
+
+- Age for WFA and length/height-for-age: **completed calendar months** (same idea as Excel `DATEDIF(..., "m")`).
+- Weight-for-**length** applies below **24 months**; weight-for-**height** from **24 up to 59 months** (by month index at measurement).
+- Each indicator returns **`status`** / **`statusCode`** (e.g. SUW, UW, N, OW, SSt, St, SW, MW, Ob). **`zScore` is always `null`**.
+
+### WHO (`standard: "who"`)
+
+- Under **5 years**: age-indexed indicators default to **`ageInDays`** on the LMS tables.
+- Optional **`whoAgeIndex: "months"`** uses month-indexed tables for 0–5 (for comparison with month-based tools).
+- **5–19 years**: height-for-age and BMI-for-age use month-indexed WHO 2007 reference; weight-for-age applies in the 5–10 year band where tables exist.
+- Returns **`zScore`**, **`percentile`**, and **`status`** per indicator.
+
+```ts
+await calculateAll({
+  standard: "who",
+  sex: "female",
+  dateOfBirth: "2024-01-01",
+  dateOfMeasurement: "2024-07-01",
+  weightKg: 7,
+  lengthHeightCm: 65,
+  whoAgeIndex: "days", // default; use "months" for 0–5 if needed
+});
+```
+
+Optional **head circumference** (WHO only, when provided):
+
+```ts
+await calculateAll({
   standard: "who",
   sex: "male",
-  dateOfBirth: "2023-06-15",
-  dateOfMeasurement: "2024-06-15",
-  weightKg: 8.2,
-  lengthHeightCm: 72,
-  whoAgeIndex: "days", // or "months" for 0–5 age-indexed indicators
+  dateOfBirth: "2024-06-01",
+  dateOfMeasurement: "2025-06-01",
+  weightKg: 9.5,
+  lengthHeightCm: 75,
+  headCircumferenceCm: 46,
 });
 ```
 
-## Data workflow
+## Single indicator (WHO only)
 
-1. Copy raw CSV/xlsx into `sources/raw/` (committed in git):
+```ts
+import { calculateZScore } from "child-growth-standards";
 
-   ```bash
-   npm run sync:sources
-   ```
-
-2. Generate JSON:
-
-   ```bash
-   npm run build:data
-   ```
-
-3. Compile TypeScript:
-
-   ```bash
-   npm run build
-   ```
-
-## Before publish
-
-1. Edit `package.json` `repository.url` and `author` to match your GitHub account.
-2. Ensure the npm name `child-growth-standards` is still available on [npmjs.com](https://www.npmjs.com/package/child-growth-standards).
-
-## GitHub
-
-```bash
-cd child-growth-standards
-git init
-git add .
-git commit -m "feat: initial child-growth-standards package"
-git remote add origin https://github.com/YOUR_USER/child-growth-standards.git
-git push -u origin main
+const wfa = await calculateZScore({
+  standard: "who",
+  indicator: "weight-for-age",
+  sex: "male",
+  dateOfBirth: "2023-06-15",
+  dateOfMeasurement: "2024-06-14",
+  weightKg: 9.5,
+  lengthHeightCm: 75,
+});
+// { indicator, zScore, status, percentile }
 ```
 
-## npm
+Indicators: `weight-for-age`, `length-height-for-age`, `bmi-for-age`, `head-circumference-for-age`, `weight-for-length`, `weight-for-height`.
 
-```bash
-npm login
-npm publish --access public
+`calculateZScore` with `standard: "doh"` returns `null` (DOH is cutoff classification only, via `calculateAll`).
+
+## Result shape
+
+```ts
+type AssessmentResult = {
+  standard: "doh" | "who";
+  ageDays: number;
+  ageMonthsCompleted: number;
+  results: Array<{
+    indicator: string;
+    zScore: number | null;
+    status: string;
+    statusCode?: string; // DOH short codes when applicable
+    percentile?: number | null; // WHO only
+  }>;
+};
 ```
 
-`prepublishOnly` runs build and tests.
+## Other exports
 
-## npm pack contents
+Age helpers, LMS utilities, and TypeScript types are exported for advanced use:
 
-Published tarball includes `dist/` (code + JSON). Raw `sources/` are excluded via `.npmignore` but remain in git for reproducible builds.
+```ts
+import {
+  ageInDays,
+  ageInCompletedMonths,
+  mapWhoClassification,
+  type CalculateAllInput,
+  type GrowthStandard,
+} from "child-growth-standards";
+```
+
+## Disclaimer
+
+This library **computes reference-based metrics and labels**. It does not diagnose disease. Clinical interpretation belongs to qualified staff. Reference data sources are described in [DATA_PROVENANCE.md](DATA_PROVENANCE.md).
 
 ## License
 
-MIT for code. See [DATA_PROVENANCE.md](DATA_PROVENANCE.md) for reference data attribution.
+MIT — see [LICENSE](LICENSE).
