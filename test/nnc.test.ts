@@ -31,4 +31,19 @@ describe("NNC standard", () => {
     const wfa = result.results.find((r) => r.indicator === "weight-for-age");
     expect(wfa?.nutritionalStatusCode).toBe("SUW");
   });
+
+  it("classifies WFA and LHFA at 65 completed months without WFH", async () => {
+    const result = await calculateAll({
+      standard: "nnc",
+      sex: "male",
+      dateOfBirth: "2020-01-15",
+      dateOfMeasurement: "2025-06-15",
+      weightKg: 22,
+      lengthHeightCm: 110,
+    });
+    expect(result.ageMonthsCompleted).toBe(65);
+    expect(result.results.some((r) => r.indicator === "weight-for-age")).toBe(true);
+    expect(result.results.some((r) => r.indicator === "length-height-for-age")).toBe(true);
+    expect(result.results.some((r) => r.indicator === "weight-for-height")).toBe(false);
+  });
 });

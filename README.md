@@ -48,7 +48,7 @@ Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (c
 
 ### NNC (`standard: "nnc"`)
 
-- Age for WFA and length/height-for-age: **completed calendar months** (same idea as Excel `DATEDIF(..., "m")`).
+- Age for WFA and length/height-for-age: **completed calendar months** (same idea as Excel `DATEDIF(..., "m")`), with tables through **71 completed months**.
 - Weight-for-**length** applies below **24 months**; weight-for-**height** from **24 up to 59 months** (by month index at measurement).
 - Each indicator returns **`nutritionalStatus`**, **`nutritionalStatusCode`** (e.g. SUW, UW, N, OW, SSt, St, SW, MW, Ob), and **`sdBand`**. **`zScore` is always `null`**.
 

@@ -9,6 +9,11 @@ import { loadDohTable, lookupDohRow, mRoundHalf } from "./load-tables.js";
 const TWENTY_FOUR_MONTHS = 24;
 const SIXTY_MONTHS = 60;
 
+/** Last month index in bundled NNC WFA/LHFA tables (inclusive). */
+export const NNC_MAX_COMPLETED_MONTH_INDEX = 71;
+/** Exclusive upper bound for completed months when NNC age tables apply. */
+export const NNC_EXCLUSIVE_MAX_COMPLETED_MONTHS = 72;
+
 export function calculateDohAll(input: CalculateAllInput): AssessmentResult {
   const dates = resolveDates(input.dateOfBirth, input.dateOfMeasurement);
   if (!dates) {
@@ -78,8 +83,13 @@ export function calculateDohAll(input: CalculateAllInput): AssessmentResult {
   };
 }
 
+export function isNncGrowthAge(months: number): boolean {
+  return months >= 0 && months < NNC_EXCLUSIVE_MAX_COMPLETED_MONTHS;
+}
+
+/** @deprecated Use isNncGrowthAge — NNC WFA/LHFA tables run through 71 completed months. */
 export function isDohPreschoolAge(months: number): boolean {
-  return months >= 0 && months < SIXTY_MONTHS;
+  return isNncGrowthAge(months);
 }
 
 export function mapSex(input: string): Sex | null {
