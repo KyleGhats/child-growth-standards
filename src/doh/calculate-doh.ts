@@ -1,3 +1,4 @@
+import { acuteFieldsForNncWastingCode } from "../acute-malnutrition.js";
 import { ageInCompletedMonths, ageInDays, resolveDates } from "../age.js";
 import type { AssessmentResult, CalculateAllInput, IndicatorResult, Sex } from "../types.js";
 import {
@@ -71,6 +72,7 @@ export function calculateDohAll(input: CalculateAllInput): AssessmentResult {
         nutritionalStatus: c.label,
         nutritionalStatusCode: c.code,
         sdBand: c.sdBand,
+        ...acuteFieldsForNncWastingCode(c.code),
       });
     }
   }

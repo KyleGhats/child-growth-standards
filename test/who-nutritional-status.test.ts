@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { FIVE_YEARS_DAYS } from "../src/age.js";
-import { mapWhoNutritionalStatus } from "../src/who/nutritional-status.js";
+import {
+  mapWhoEdemaNutritionalStatus,
+  mapWhoMuacNutritionalStatus,
+  mapWhoNutritionalStatus,
+} from "../src/who/nutritional-status.js";
 
 describe("mapWhoNutritionalStatus boundaries", () => {
   const underFive = FIVE_YEARS_DAYS - 1;
@@ -34,6 +38,30 @@ describe("mapWhoNutritionalStatus boundaries", () => {
     const r = mapWhoNutritionalStatus("wfl", 1.5, underFive);
     expect(r.nutritionalStatus).toBe("Risk of overweight");
     expect(r.nutritionalStatusCode).toBe("RISK_OW");
+  });
+
+  it("WFL 0–5: MAM/SAM acute labels on wasting bands", () => {
+    const mam = mapWhoNutritionalStatus("wfl", -2.5, underFive);
+    expect(mam.nutritionalStatus).toBe("Moderately wasted");
+    expect(mam.acuteMalnutritionStatus).toBe("Moderate acute malnutrition");
+    expect(mam.acuteMalnutritionStatusCode).toBe("MAM");
+
+    const sam = mapWhoNutritionalStatus("wfl", -3.5, underFive);
+    expect(sam.nutritionalStatus).toBe("Severely wasted");
+    expect(sam.acuteMalnutritionStatusCode).toBe("SAM");
+  });
+
+  it("MUAC Table 1 cutoffs at 24 completed months", () => {
+    expect(mapWhoMuacNutritionalStatus(11, 24)?.acuteMalnutritionStatusCode).toBe("SAM");
+    expect(mapWhoMuacNutritionalStatus(12, 24)?.acuteMalnutritionStatusCode).toBe("MAM");
+    expect(mapWhoMuacNutritionalStatus(13, 24)?.nutritionalStatusCode).toBe("N");
+    expect(mapWhoMuacNutritionalStatus(11, 5)).toBeNull();
+  });
+
+  it("bilateral pitting oedema → SAM", () => {
+    const r = mapWhoEdemaNutritionalStatus(true);
+    expect(r?.acuteMalnutritionStatusCode).toBe("SAM");
+    expect(r?.nutritionalStatusCode).toBe("SAM");
   });
 
   it("BFA 5–19: overweight at z = 1.5", () => {

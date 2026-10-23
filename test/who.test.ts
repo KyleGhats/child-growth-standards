@@ -29,6 +29,25 @@ describe("WHO standard", () => {
     expect(result.results.some((r) => r.indicator === "weight-for-age")).toBe(true);
     expect(result.results.some((r) => r.indicator === "length-height-for-age")).toBe(true);
   });
+
+  it("calculateAll appends MUAC and oedema indicators when provided", async () => {
+    const result = await calculateAll({
+      standard: "who",
+      sex: "female",
+      dateOfBirth: "2022-01-01",
+      dateOfMeasurement: "2024-01-01",
+      weightKg: 10,
+      lengthHeightCm: 85,
+      muacCm: 11.2,
+      bilateralPittingEdema: true,
+    });
+    expect(
+      result.results.some((r) => r.indicator === "mid-upper-arm-circumference"),
+    ).toBe(true);
+    expect(
+      result.results.some((r) => r.indicator === "bilateral-pitting-oedema"),
+    ).toBe(true);
+  });
 });
 
 describe("WHO golden values (from bundled LMS tables)", () => {

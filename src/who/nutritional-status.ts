@@ -1,5 +1,10 @@
+import { ACUTE_MAM, ACUTE_SAM } from "../acute-malnutrition.js";
 import { FIVE_YEARS_DAYS } from "../age.js";
-import type { WhoNutritionalStatusReference, WhoNutritionalStatusResult } from "../types.js";
+import type {
+  IndicatorResult,
+  WhoNutritionalStatusReference,
+  WhoNutritionalStatusResult,
+} from "../types.js";
 
 export type WhoIndicatorKind = "wfa" | "hfa" | "lhfa" | "wfl" | "wfh" | "bfa" | "hcfa";
 
@@ -9,13 +14,31 @@ function normalizeKind(kind: WhoIndicatorKind): WhoIndicatorKind {
   return kind;
 }
 
+const MUAC_SAM_MAX_CM = 11.5;
+const MUAC_MAM_MAX_CM = 12.5;
+/** IMCI MUAC classification typically applies at 6–59 completed months. */
+export const MUAC_CLASSIFICATION_MIN_MONTHS = 6;
+export const MUAC_CLASSIFICATION_MAX_MONTHS = 59;
+
 function result(
   nutritionalStatus: string,
   nutritionalStatusCode: string,
   sdBand: string,
   reference: WhoNutritionalStatusReference,
+  acute?: { status: string; code: string },
 ): WhoNutritionalStatusResult {
-  return { nutritionalStatus, nutritionalStatusCode, sdBand, reference };
+  return {
+    nutritionalStatus,
+    nutritionalStatusCode,
+    sdBand,
+    reference,
+    ...(acute
+      ? {
+          acuteMalnutritionStatus: acute.status,
+          acuteMalnutritionStatusCode: acute.code,
+        }
+      : {}),
+  };
 }
 
 function whoSdBand(
@@ -129,10 +152,10 @@ function mapHfaFiveToNineteen(z: number): WhoNutritionalStatusResult {
 function mapWflUnderFive(z: number): WhoNutritionalStatusResult {
   const ref = "who-imci-table1-0-5" as const;
   if (z < -3) {
-    return result("Severely wasted", "SEV_W", "< −3 SD", ref);
+    return result("Severely wasted", "SEV_W", "< −3 SD", ref, ACUTE_SAM);
   }
   if (z <= -2) {
-    return result("Moderately wasted", "MOD_W", "−3 SD to −2 SD", ref);
+    return result("Moderately wasted", "MOD_W", "−3 SD to −2 SD", ref, ACUTE_MAM);
   }
   if (z <= 1) {
     return result("Normal", "N", "−2 SD to +1 SD", ref);
@@ -216,4 +239,77 @@ export function mapWhoNutritionalStatus(
   }
 
   return result("", "", "", underFive ? "who-imci-table1-0-5" : "who-growth-ref-5-19");
+}
+
+/** Table 1 MUAC cutoffs (115 mm / 125 mm), input in cm. */
+export function mapWhoMuacNutritionalStatus(
+  muacCm: number,
+  ageMonthsCompleted: number,
+): WhoNutritionalStatusResult | null {
+  const muac = Number(muacCm);
+  if (!Number.isFinite(muac) || muac <= 0) return null;
+  if (
+    ageMonthsCompleted < MUAC_CLASSIFICATION_MIN_MONTHS ||
+    ageMonthsCompleted > MUAC_CLASSIFICATION_MAX_MONTHS
+  ) {
+    return null;
+  }
+
+  const ref = "who-imci-table1-0-5" as const;
+  if (muac < MUAC_SAM_MAX_CM) {
+    return result(
+      "Severe acute malnutrition (MUAC)",
+      "SAM",
+      "< 11.5 cm",
+      ref,
+      ACUTE_SAM,
+    );
+  }
+  if (muac < MUAC_MAM_MAX_CM) {
+    return result(
+      "Moderate acute malnutrition (MUAC)",
+      "MAM",
+      "11.5 cm to < 12.5 cm",
+      ref,
+      ACUTE_MAM,
+    );
+  }
+  return result("Normal (MUAC)", "N", "≥ 12.5 cm", ref);
+}
+
+/** Table 1: bilateral pitting oedema → severe acute malnutrition. */
+export function mapWhoEdemaNutritionalStatus(
+  bilateralPittingEdema: boolean,
+): WhoNutritionalStatusResult | null {
+  if (!bilateralPittingEdema) return null;
+  const ref = "who-imci-table1-0-5" as const;
+  return result(
+    "Severe acute malnutrition (bilateral pitting oedema)",
+    "SAM",
+    "Clinical",
+    ref,
+    ACUTE_SAM,
+  );
+}
+
+export function indicatorResultFromWhoStatus(
+  indicator: string,
+  ns: WhoNutritionalStatusResult,
+  zScore: number | null = null,
+  percentile: number | null = null,
+): IndicatorResult {
+  return {
+    indicator,
+    zScore,
+    nutritionalStatus: ns.nutritionalStatus,
+    nutritionalStatusCode: ns.nutritionalStatusCode,
+    sdBand: ns.sdBand,
+    ...(ns.acuteMalnutritionStatus
+      ? {
+          acuteMalnutritionStatus: ns.acuteMalnutritionStatus,
+          acuteMalnutritionStatusCode: ns.acuteMalnutritionStatusCode,
+        }
+      : {}),
+    ...(percentile != null ? { percentile } : {}),
+  };
 }

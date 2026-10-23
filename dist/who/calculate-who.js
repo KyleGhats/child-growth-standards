@@ -1,6 +1,6 @@
 import { ageInCompletedMonths, ageInDays, resolveDates } from "../age.js";
 import { computeZScore, lookupLms, zScoreToPercentile } from "../lms.js";
-import { mapWhoNutritionalStatus } from "./nutritional-status.js";
+import { indicatorResultFromWhoStatus, mapWhoEdemaNutritionalStatus, mapWhoMuacNutritionalStatus, mapWhoNutritionalStatus, } from "./nutritional-status.js";
 import { resolveWhoLms } from "./resolve-table.js";
 const TWENTY_FOUR_MONTHS_DAYS = 731;
 function rawBmi(weightKg, heightCm) {
@@ -86,6 +86,12 @@ export function calculateWhoZScore(input) {
         nutritionalStatus: ns.nutritionalStatus,
         nutritionalStatusCode: ns.nutritionalStatusCode,
         sdBand: ns.sdBand,
+        ...(ns.acuteMalnutritionStatus
+            ? {
+                acuteMalnutritionStatus: ns.acuteMalnutritionStatus,
+                acuteMalnutritionStatusCode: ns.acuteMalnutritionStatusCode,
+            }
+            : {}),
         percentile: zScoreToPercentile(z),
     };
 }
@@ -115,6 +121,18 @@ export function calculateWhoAll(input) {
         const row = calculateWhoZScore({ ...input, indicator });
         if (row)
             results.push(row);
+    }
+    if (input.muacCm != null) {
+        const muacNs = mapWhoMuacNutritionalStatus(input.muacCm, months);
+        if (muacNs) {
+            results.push(indicatorResultFromWhoStatus("mid-upper-arm-circumference", muacNs));
+        }
+    }
+    if (input.bilateralPittingEdema) {
+        const edemaNs = mapWhoEdemaNutritionalStatus(true);
+        if (edemaNs) {
+            results.push(indicatorResultFromWhoStatus("bilateral-pitting-oedema", edemaNs));
+        }
     }
     return { standard: "who", ageDays: days, ageMonthsCompleted: months, results };
 }

@@ -1,0 +1,1 @@
+{"version":3,"file":"acute-malnutrition.d.ts","sourceRoot":"","sources":["../src/acute-malnutrition.ts"],"names":[],"mappings":"AAAA,eAAO,MAAM,SAAS;;;CAGZ,CAAC;AAEX,eAAO,MAAM,SAAS;;;CAGZ,CAAC;AAEX,MAAM,MAAM,uBAAuB,GAAG;IACpC,uBAAuB,EAAE,MAAM,CAAC;IAChC,2BAA2B,EAAE,MAAM,CAAC;CACrC,CAAC;AAEF,uFAAuF;AACvF,wBAAgB,4BAA4B,CAC1C,IAAI,EAAE,MAAM,GACX,OAAO,CAAC,uBAAuB,CAAC,CAclC"}

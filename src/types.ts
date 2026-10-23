@@ -12,6 +12,10 @@ export type CalculateAllInput = {
   weightKg: number;
   lengthHeightCm: number;
   headCircumferenceCm?: number;
+  /** WHO only: mid-upper arm circumference in cm (IMCI Table 1 SAM/MAM cutoffs use mm internally). */
+  muacCm?: number;
+  /** WHO only: bilateral pitting oedema → severe acute malnutrition (Table 1). */
+  bilateralPittingEdema?: boolean;
   /** WHO only: age index for 0–5 age-based indicators. Default `days`. */
   whoAgeIndex?: WhoAgeIndex;
 };
@@ -34,6 +38,9 @@ export type WhoNutritionalStatusResult = {
   nutritionalStatusCode: string;
   sdBand: string;
   reference: WhoNutritionalStatusReference;
+  /** Table 1 MAM/SAM when anthropometric wasting or MUAC/edema applies. */
+  acuteMalnutritionStatus?: string;
+  acuteMalnutritionStatusCode?: string;
 };
 
 export type IndicatorResult = {
@@ -42,6 +49,8 @@ export type IndicatorResult = {
   nutritionalStatus: string;
   nutritionalStatusCode?: string;
   sdBand?: string;
+  acuteMalnutritionStatus?: string;
+  acuteMalnutritionStatusCode?: string;
   percentile?: number | null;
 };
 

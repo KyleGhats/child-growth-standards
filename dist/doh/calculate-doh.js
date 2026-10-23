@@ -1,3 +1,4 @@
+import { acuteFieldsForNncWastingCode } from "../acute-malnutrition.js";
 import { ageInCompletedMonths, ageInDays, resolveDates } from "../age.js";
 import { classifyDohLhfa, classifyDohWfa, classifyDohWflh, } from "./classify-cutoffs.js";
 import { loadDohTable, lookupDohRow, mRoundHalf } from "./load-tables.js";
@@ -58,6 +59,7 @@ export function calculateDohAll(input) {
                 nutritionalStatus: c.label,
                 nutritionalStatusCode: c.code,
                 sdBand: c.sdBand,
+                ...acuteFieldsForNncWastingCode(c.code),
             });
         }
     }

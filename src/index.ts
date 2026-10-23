@@ -9,7 +9,14 @@ export {
   NINETEEN_YEARS_DAYS,
   WHO_DAYS_PER_MONTH,
 } from "./age.js";
-export { mapWhoNutritionalStatus } from "./who/nutritional-status.js";
+export {
+  MUAC_CLASSIFICATION_MAX_MONTHS,
+  MUAC_CLASSIFICATION_MIN_MONTHS,
+  indicatorResultFromWhoStatus,
+  mapWhoEdemaNutritionalStatus,
+  mapWhoMuacNutritionalStatus,
+  mapWhoNutritionalStatus,
+} from "./who/nutritional-status.js";
 export {
   calculateDohAll,
   isDohPreschoolAge,

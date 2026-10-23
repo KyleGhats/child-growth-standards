@@ -32,6 +32,37 @@ describe("NNC standard", () => {
     expect(wfa?.nutritionalStatusCode).toBe("SUW");
   });
 
+  it("adds MAM/SAM acute fields on NNC wasting (WFL) without changing eOPT labels", async () => {
+    const mam = await calculateAll({
+      standard: "nnc",
+      sex: "male",
+      dateOfBirth: "2023-06-15",
+      dateOfMeasurement: "2024-06-15",
+      weightKg: 7.6,
+      lengthHeightCm: 75,
+    });
+    const wflMam = mam.results.find((r) => r.indicator === "weight-for-length");
+    expect(wflMam?.nutritionalStatus).toBe("Moderately Wasted");
+    expect(wflMam?.nutritionalStatusCode).toBe("MW");
+    expect(wflMam?.acuteMalnutritionStatusCode).toBe("MAM");
+
+    const sam = await calculateAll({
+      standard: "nnc",
+      sex: "male",
+      dateOfBirth: "2023-06-15",
+      dateOfMeasurement: "2024-06-15",
+      weightKg: 6.5,
+      lengthHeightCm: 75,
+    });
+    const wflSam = sam.results.find((r) => r.indicator === "weight-for-length");
+    expect(wflSam?.nutritionalStatus).toBe("Severely Wasted");
+    expect(wflSam?.nutritionalStatusCode).toBe("SW");
+    expect(wflSam?.acuteMalnutritionStatusCode).toBe("SAM");
+
+    const wfa = sam.results.find((r) => r.indicator === "weight-for-age");
+    expect(wfa?.acuteMalnutritionStatusCode).toBeUndefined();
+  });
+
   it("classifies WFA and LHFA at 65 completed months without WFH", async () => {
     const result = await calculateAll({
       standard: "nnc",

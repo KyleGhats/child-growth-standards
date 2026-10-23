@@ -51,6 +51,7 @@ Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (c
 - Age for WFA and length/height-for-age: **completed calendar months** (same idea as Excel `DATEDIF(..., "m")`), with tables through **71 completed months**.
 - Weight-for-**length** applies below **24 months**; weight-for-**height** from **24 up to 59 months** (by month index at measurement).
 - Each indicator returns **`nutritionalStatus`**, **`nutritionalStatusCode`** (e.g. SUW, UW, N, OW, SSt, St, SW, MW, Ob), and **`sdBand`**. **`zScore` is always `null`**.
+- WFL/WFH wasting (**`MW`** / **`SW`**) also includes **`acuteMalnutritionStatus`** and **`acuteMalnutritionStatusCode`** (`MAM` / `SAM`), with eOPT labels unchanged.
 
 ### WHO (`standard: "who"`)
 
@@ -63,7 +64,7 @@ Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (c
 
 | Age | Source |
 |-----|--------|
-| Birth–5 years | [WHO IMCI Table 1 (NBK487900)](https://www.ncbi.nlm.nih.gov/books/NBK487900/table/fm.s1.t1/) — underweight, stunting, wasting, overweight/obesity on WFL/H and BMI-for-age; weight-for-age underweight only |
+| Birth–5 years | [WHO IMCI Table 1 (NBK487900)](https://www.ncbi.nlm.nih.gov/books/NBK487900/table/fm.s1.t1/) — underweight, stunting, wasting (with **MAM/SAM** on WFL/WFH/BMI-for-age wasting bands), overweight/obesity; optional **MUAC** (6–59 completed months, &lt;11.5 / 11.5–&lt;12.5 cm) and **bilateral pitting oedema** (SAM) |
 | 5–19 years | [WHO BMI-for-age (5–19)](https://www.who.int/tools/growth-reference-data-for-5to19-years/indicators/bmi-for-age) — thinness, normal weight, overweight, obesity; height-for-age stunting |
 
 Head circumference-for-age uses WHO chart bands (below / normal / above expected), not Table 1.
@@ -80,7 +81,7 @@ await calculateAll({
 });
 ```
 
-Optional **head circumference** (WHO only, when provided):
+Optional **head circumference**, **MUAC (cm)**, and **bilateral pitting oedema** (WHO only, when provided):
 
 ```ts
 await calculateAll({
@@ -91,8 +92,12 @@ await calculateAll({
   weightKg: 9.5,
   lengthHeightCm: 75,
   headCircumferenceCm: 46,
+  muacCm: 12.1,
+  bilateralPittingEdema: false,
 });
 ```
+
+Wasting indicators also expose **`acuteMalnutritionStatus`** / **`acuteMalnutritionStatusCode`** (`MAM` / `SAM`) alongside the legacy “moderately/severely wasted” labels. MUAC and oedema appear as extra results: `mid-upper-arm-circumference`, `bilateral-pitting-oedema`.
 
 ## Single indicator (WHO only)
 
