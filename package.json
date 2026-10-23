@@ -1,6 +1,6 @@
 {
   "name": "child-growth-standards",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "Pediatric growth — NNC (eOPT) cutoff classification and WHO LMS z-scores with nutritional status",
   "type": "module",
   "license": "MIT",

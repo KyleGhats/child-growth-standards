@@ -1,4 +1,4 @@
-import { ageInCompletedMonths, ageInDays, resolveDates } from "../age.js";
+import { ageInCompletedMonths, ageInDays, FIVE_YEARS_DAYS, resolveDates } from "../age.js";
 import { computeZScore, lookupLms, zScoreToPercentile } from "../lms.js";
 import type {
   AssessmentResult,
@@ -15,6 +15,8 @@ import {
 import { resolveWhoLms, type WhoIndicator } from "./resolve-table.js";
 
 const TWENTY_FOUR_MONTHS_DAYS = 731;
+/** WHO weight-for-height tables index standing height from 65 cm. */
+export const WHO_WFH_MIN_LENGTH_CM = 65;
 
 function rawBmi(weightKg: number, heightCm: number): number {
   const m = heightCm / 100;
@@ -32,6 +34,20 @@ function indicatorKind(
   if (api === "weight-for-length") return "wfl";
   if (api === "weight-for-height") return "wfh";
   return "wfa";
+}
+
+export function resolveWhoWflWfhIndicator(
+  ageDays: number,
+  lengthHeightCm: number | undefined,
+): { tableIndicator: "wfl" | "wfh"; apiIndicator: "weight-for-length" | "weight-for-height" } | null {
+  if (lengthHeightCm == null || !Number.isFinite(lengthHeightCm)) return null;
+  if (ageDays < TWENTY_FOUR_MONTHS_DAYS || lengthHeightCm < WHO_WFH_MIN_LENGTH_CM) {
+    return { tableIndicator: "wfl", apiIndicator: "weight-for-length" };
+  }
+  if (ageDays <= FIVE_YEARS_DAYS) {
+    return { tableIndicator: "wfh", apiIndicator: "weight-for-height" };
+  }
+  return null;
 }
 
 function toWhoIndicator(api: string): WhoIndicator | null {
@@ -71,22 +87,27 @@ export function calculateWhoZScore(input: CalculateZScoreInput): IndicatorResult
   }
   if (measurement == null || !Number.isFinite(measurement)) return null;
 
-  let ind = wi;
-  if (wi === "wfl" && days >= TWENTY_FOUR_MONTHS_DAYS) ind = "wfh";
-  if (wi === "wfh" && days < TWENTY_FOUR_MONTHS_DAYS) ind = "wfl";
+  let tableIndicator = wi;
+  let apiIndicator = input.indicator;
+  if (wi === "wfl" || wi === "wfh") {
+    const resolved = resolveWhoWflWfhIndicator(days, input.lengthHeightCm);
+    if (!resolved) return null;
+    tableIndicator = resolved.tableIndicator;
+    apiIndicator = resolved.apiIndicator;
+  }
 
-  const lmsRef = resolveWhoLms(ind, input.sex, days, whoAgeIndex, input.lengthHeightCm);
+  const lmsRef = resolveWhoLms(tableIndicator, input.sex, days, whoAgeIndex, input.lengthHeightCm);
   if (!lmsRef) return null;
   const lms = lookupLms(lmsRef.table, lmsRef.index);
   if (!lms) return null;
   const z = computeZScore(measurement, lms);
   if (!Number.isFinite(z)) return null;
 
-  const kind = indicatorKind(input.indicator, days);
+  const kind = indicatorKind(apiIndicator, days);
   const ns = mapWhoNutritionalStatus(kind, z, days);
 
   return {
-    indicator: input.indicator,
+    indicator: apiIndicator,
     zScore: z,
     nutritionalStatus: ns.nutritionalStatus,
     nutritionalStatusCode: ns.nutritionalStatusCode,
@@ -117,10 +138,9 @@ export function calculateWhoAll(input: CalculateAllInput): AssessmentResult {
   if (input.headCircumferenceCm != null) {
     indicators.push("head-circumference-for-age");
   }
-  if (days < TWENTY_FOUR_MONTHS_DAYS) {
-    indicators.push("weight-for-length");
-  } else if (days <= 1856) {
-    indicators.push("weight-for-height");
+  const wflWfh = resolveWhoWflWfhIndicator(days, input.lengthHeightCm);
+  if (wflWfh) {
+    indicators.push(wflWfh.apiIndicator);
   }
 
   const results: IndicatorResult[] = [];

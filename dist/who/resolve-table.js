@@ -56,8 +56,6 @@ export function whoTableFile(indicator, sex, ageInDays, whoAgeIndex) {
                 };
             }
         case "wfl":
-            if (ageInDays >= 731)
-                return null;
             return {
                 file: whoAgeIndex === "months" ? `wfl-${sexKey}-months.json` : `wfl-${sexKey}-days.json`,
                 index: 0,

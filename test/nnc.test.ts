@@ -41,6 +41,10 @@ describe("NNC standard", () => {
       weightKg: 7.6,
       lengthHeightCm: 75,
     });
+    const wfaUw = mam.results.find((r) => r.indicator === "weight-for-age");
+    expect(wfaUw?.nutritionalStatus).toBe("Underweight");
+    expect(wfaUw?.nutritionalStatusCode).toBe("UW");
+
     const wflMam = mam.results.find((r) => r.indicator === "weight-for-length");
     expect(wflMam?.nutritionalStatus).toBe("Moderately Wasted");
     expect(wflMam?.nutritionalStatusCode).toBe("MW");
@@ -61,6 +65,22 @@ describe("NNC standard", () => {
 
     const wfa = sam.results.find((r) => r.indicator === "weight-for-age");
     expect(wfa?.acuteMalnutritionStatusCode).toBeUndefined();
+  });
+
+  it("uses weight-for-length when age >= 24 mo but height below WFH minimum", async () => {
+    const result = await calculateAll({
+      standard: "nnc",
+      sex: "male",
+      dateOfBirth: "2024-04-01",
+      dateOfMeasurement: "2026-09-24",
+      weightKg: 4.6,
+      lengthHeightCm: 50,
+    });
+    expect(result.ageMonthsCompleted).toBe(29);
+    const wfl = result.results.find((r) => r.indicator === "weight-for-length");
+    expect(wfl).toBeDefined();
+    expect(wfl?.nutritionalStatusCode).toBeTruthy();
+    expect(result.results.some((r) => r.indicator === "weight-for-height")).toBe(false);
   });
 
   it("classifies WFA and LHFA at 65 completed months without WFH", async () => {

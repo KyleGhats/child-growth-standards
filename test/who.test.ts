@@ -17,6 +17,23 @@ describe("WHO standard", () => {
     expect(row?.nutritionalStatus).toBeTruthy();
   });
 
+  it("uses weight-for-length when age >= 24 mo but length below WFH table minimum", async () => {
+    const result = await calculateAll({
+      standard: "who",
+      sex: "male",
+      dateOfBirth: "2024-04-01",
+      dateOfMeasurement: "2026-09-24",
+      weightKg: 4.6,
+      lengthHeightCm: 50,
+    });
+    expect(result.ageDays).toBe(906);
+    const wfl = result.results.find((r) => r.indicator === "weight-for-length");
+    expect(wfl).toBeDefined();
+    expect(wfl?.zScore).not.toBeNull();
+    expect(Number.isFinite(wfl!.zScore!)).toBe(true);
+    expect(result.results.some((r) => r.indicator === "weight-for-height")).toBe(false);
+  });
+
   it("calculateAll includes WFA and LHFA under 5", async () => {
     const result = await calculateAll({
       standard: "who",

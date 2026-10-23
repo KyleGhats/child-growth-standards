@@ -9,6 +9,8 @@ import {
 import { loadDohTable, lookupDohRow, mRoundHalf } from "./load-tables.js";
 const TWENTY_FOUR_MONTHS = 24;
 const SIXTY_MONTHS = 60;
+/** NNC WFH tables start at 65 cm; shorter lengths use WFL (same as WHO). */
+const NNC_WFH_MIN_LENGTH_CM = 65;
 
 /** Last month index in bundled NNC WFA/LHFA tables (inclusive). */
 export const NNC_MAX_COMPLETED_MONTH_INDEX = 71;
@@ -59,15 +61,18 @@ export function calculateDohAll(input: CalculateAllInput): AssessmentResult {
   }
 
   const lengthIndex = mRoundHalf(height);
-  const wflIndicator =
+  let wflTableKey =
     months < TWENTY_FOUR_MONTHS ? "wfl" : months < SIXTY_MONTHS ? "wfh" : null;
-  if (wflIndicator) {
-    const table = loadDohTable(wflIndicator, sex);
+  if (wflTableKey === "wfh" && lengthIndex < NNC_WFH_MIN_LENGTH_CM) {
+    wflTableKey = "wfl";
+  }
+  if (wflTableKey) {
+    const table = loadDohTable(wflTableKey, sex);
     const row = lookupDohRow(table, lengthIndex);
     if (row) {
       const c = classifyDohWflh(weight, row);
       results.push({
-        indicator: wflIndicator === "wfl" ? "weight-for-length" : "weight-for-height",
+        indicator: wflTableKey === "wfl" ? "weight-for-length" : "weight-for-height",
         zScore: null,
         nutritionalStatus: c.label,
         nutritionalStatusCode: c.code,

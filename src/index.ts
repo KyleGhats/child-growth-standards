@@ -25,6 +25,7 @@ export {
   NNC_EXCLUSIVE_MAX_COMPLETED_MONTHS,
   NNC_MAX_COMPLETED_MONTH_INDEX,
 } from "./doh/calculate-doh.js";
+export { resolveWhoWflWfhIndicator, WHO_WFH_MIN_LENGTH_CM } from "./who/calculate-who.js";
 export { computeZScore, lookupLms, normalCdf, zScoreToPercentile } from "./lms.js";
 export type {
   AssessmentResult,

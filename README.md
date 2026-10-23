@@ -49,7 +49,7 @@ Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (c
 ### NNC (`standard: "nnc"`)
 
 - Age for WFA and length/height-for-age: **completed calendar months** (same idea as Excel `DATEDIF(..., "m")`), with tables through **71 completed months**.
-- Weight-for-**length** applies below **24 months**; weight-for-**height** from **24 up to 59 months** (by month index at measurement).
+- Weight-for-**length** applies below **24 months**; weight-for-**height** from **24 up to 59 months** (by month index at measurement). From **0.2.5**, if age would use WFH but measured length/height is **below 65 cm** (NNC WFH table minimum), classification uses the **WFL** table instead.
 - Each indicator returns **`nutritionalStatus`**, **`nutritionalStatusCode`** (e.g. SUW, UW, N, OW, SSt, St, SW, MW, Ob), and **`sdBand`**. **`zScore` is always `null`**.
 - WFL/WFH wasting (**`MW`** / **`SW`**) also includes **`acuteMalnutritionStatus`** and **`acuteMalnutritionStatusCode`** (`MAM` / `SAM`), with eOPT labels unchanged.
 
@@ -58,6 +58,7 @@ Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (c
 - Under **5 years**: age-indexed indicators default to **`ageInDays`** on the LMS tables.
 - Optional **`whoAgeIndex: "months"`** uses month-indexed tables for 0–5 (for comparison with month-based tools).
 - **5–19 years**: height-for-age and BMI-for-age use month-indexed WHO 2007 reference; weight-for-age applies in the 5–10 year band where tables exist.
+- From **0.2.5**, acute wasting uses **weight-for-length** when age is under 24 months **or** length/height is **below 65 cm** (WHO WFH tables start at 65 cm); otherwise **weight-for-height** through 5 years. Helpers: `resolveWhoWflWfhIndicator`, `WHO_WFH_MIN_LENGTH_CM`.
 - Returns **`zScore`**, **`percentile`**, **`nutritionalStatus`**, **`nutritionalStatusCode`**, and **`sdBand`** per indicator.
 
 ### WHO nutritional status references
@@ -147,6 +148,8 @@ import {
   ageInDays,
   ageInCompletedMonths,
   mapWhoNutritionalStatus,
+  resolveWhoWflWfhIndicator,
+  WHO_WFH_MIN_LENGTH_CM,
   type CalculateAllInput,
   type GrowthStandard,
   type WhoNutritionalStatusResult,

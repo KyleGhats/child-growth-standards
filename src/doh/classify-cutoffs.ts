@@ -46,7 +46,8 @@ export function classifyDohWfa(weightKg: number, row: DohBandRow): NncClassifica
   if (uwFrom != null && weightKg < uwFrom) {
     return withSdBand("SUW", "Severely Underweight");
   }
-  if (uwFrom != null && uwTo != null && weightKg >= uwFrom && weightKg < uwTo) {
+  const uwUpper = normalFrom ?? uwTo;
+  if (uwFrom != null && uwUpper != null && weightKg >= uwFrom && weightKg < uwUpper) {
     return withSdBand("UW", "Underweight");
   }
   if (normalFrom != null && normalTo != null && weightKg >= normalFrom && weightKg <= normalTo) {
@@ -69,7 +70,8 @@ export function classifyDohLhfa(heightCm: number, row: DohBandRow): NncClassific
   if (stFrom != null && heightCm < stFrom) {
     return withSdBand("SSt", "Severely Stunted");
   }
-  if (stFrom != null && stTo != null && heightCm >= stFrom && heightCm < stTo) {
+  const stUpper = normalFrom ?? stTo;
+  if (stFrom != null && stUpper != null && heightCm >= stFrom && heightCm < stUpper) {
     return withSdBand("St", "Stunted");
   }
   if (normalFrom != null && normalTo != null && heightCm >= normalFrom && heightCm <= normalTo) {
@@ -93,7 +95,8 @@ export function classifyDohWflh(weightKg: number, row: DohBandRow): NncClassific
   const ob = band(b, "obese");
 
   if (sw != null && weightKg < sw) return withSdBand("SW", "Severely Wasted");
-  if (mwFrom != null && mwTo != null && weightKg >= mwFrom && weightKg < mwTo) {
+  const mwUpper = normalFrom ?? mwTo;
+  if (mwFrom != null && mwUpper != null && weightKg >= mwFrom && weightKg < mwUpper) {
     return withSdBand("MW", "Moderately Wasted");
   }
   if (normalFrom != null && normalTo != null && weightKg >= normalFrom && weightKg <= normalTo) {
