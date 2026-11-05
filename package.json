@@ -1,6 +1,6 @@
 {
   "name": "child-growth-standards",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "Pediatric growth — NNC (eOPT) cutoff classification and WHO LMS z-scores with nutritional status",
   "type": "module",
   "license": "MIT",
@@ -15,6 +15,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./browser": {
+      "import": "./dist/browser.mjs",
+      "types": "./dist/browser.d.ts"
     }
   },
   "files": [
@@ -25,7 +29,8 @@
   "scripts": {
     "sync:sources": "node scripts/sync-sources-from-bmrs.mjs",
     "build:data": "node scripts/build-data.mjs",
-    "build": "npm run build:data && tsc -p tsconfig.build.json",
+    "build:browser": "node scripts/generate-browser-registry.mjs && node scripts/build-browser.mjs",
+    "build": "npm run build:data && tsc -p tsconfig.build.json && npm run build:browser",
     "test": "npm run build && vitest run",
     "prepublishOnly": "npm run build && vitest run"
   },
@@ -41,6 +46,7 @@
     "nutrition"
   ],
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "@types/node": "^22.10.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0",

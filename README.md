@@ -36,6 +36,25 @@ console.log(assessment.results);
 
 Use **`YYYY-MM-DD`** strings or `Date` values for birth and measurement dates (calendar dates, not timestamps with timezone surprises).
 
+### Browser / static SPA (no Node.js server)
+
+For hosts that only serve static assets (Laravel + built Nuxt/Vite files, **no Node runtime**), import the prebuilt bundle. WHO/NNC JSON is inlined at build time — no `fs`, no `/api` route:
+
+```ts
+import { runPediatricGrowthRequest } from "child-growth-standards/browser";
+
+const result = await runPediatricGrowthRequest({
+  mode: "compare", // or "all" | "zscore"
+  sex: "male",
+  dateOfBirth: "2024-04-01",
+  dateOfMeasurement: "2026-09-24",
+  weightKg: 4.6,
+  lengthHeightCm: 50,
+});
+```
+
+The default package entry (`child-growth-standards`) still reads tables from disk and is intended for **Node.js** and tests.
+
 ## Migration (0.1.0 → 0.2.0)
 
 - `standard: "doh"` → **`"nnc"`**

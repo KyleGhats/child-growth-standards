@@ -1,5 +1,11 @@
 export { calculateAll, calculateZScore } from "./calculate.js";
 export {
+  runPediatricGrowthRequest,
+  computePediatricGrowthRequest,
+  type PediatricGrowthRequestBody,
+  type PediatricGrowthRequestResult,
+} from "./run-pediatric-growth-request.js";
+export {
   ageInCompletedMonths,
   ageInDays,
   daysToMonths,
